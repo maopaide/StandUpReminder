@@ -248,20 +248,70 @@
                                    FontSize="16" 
                                    FontWeight="SemiBold"
                                    Margin="0,0,0,15"/>
-						<WrapPanel>
-							<Button Content="✅ 记录一次站立" 
-                                    Command="{Binding CompleteStandUpCommand}"
-                                    Style="{StaticResource SecondaryButtonStyle}"
-                                    Margin="0,0,10,10"/>
-							<Button Content="🔔 测试通知" 
-                                    Command="{Binding TestNotificationCommand}"
-                                    Style="{StaticResource SecondaryButtonStyle}"
-                                    Margin="0,0,10,10"/>
-							<Button Content="🔄 重置计数" 
-                                    Command="{Binding ResetTodayCountCommand}"
-                                    Style="{StaticResource SecondaryButtonStyle}"
-                                    Margin="0,0,10,10"/>
-						</WrapPanel>
+						<!-- === 修改：记录时间输入 + 记录按钮同一行 === -->
+						<StackPanel>
+
+							<!-- 第一行：HH : mm + 记录按钮 -->
+							<StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+								<!-- 小时 -->
+								<Border CornerRadius="6"
+										Background="#F5F5F5"
+										BorderBrush="#DDDDDD"
+										BorderThickness="1"
+										Height="32"
+										Width="60"
+										Margin="0,0,6,0">
+									<TextBox Text="{Binding RecordHourText, UpdateSourceTrigger=PropertyChanged}"
+											 GotFocus="RecordTimeBox_GotFocus" LostFocus="RecordTimeBox_LostFocus"
+											 Background="Transparent"
+											 BorderThickness="0"
+											 Padding="8,0"
+											 VerticalContentAlignment="Center"
+											 HorizontalContentAlignment="Center"
+											 MaxLength="2"
+											 ToolTip="小时(0-23)"/>
+								</Border>
+
+								<TextBlock Text=":" VerticalAlignment="Center" FontSize="16" Margin="0,0,6,0"/>
+
+								<!-- 分钟 -->
+								<Border CornerRadius="6"
+										Background="#F5F5F5"
+										BorderBrush="#DDDDDD"
+										BorderThickness="1"
+										Height="32"
+										Width="60"
+										Margin="0,0,10,0">
+									<TextBox Text="{Binding RecordMinuteText, UpdateSourceTrigger=PropertyChanged}"
+											 GotFocus="RecordTimeBox_GotFocus" LostFocus="RecordTimeBox_LostFocus"
+											 Background="Transparent"
+											 BorderThickness="0"
+											 Padding="8,0"
+											 VerticalContentAlignment="Center"
+											 HorizontalContentAlignment="Center"
+											 MaxLength="2"
+											 ToolTip="分钟(0-59)"/>
+								</Border>
+
+								<Button Content="✅ 记录一次站立"
+										Command="{Binding CompleteStandUpCommand}"
+										Style="{StaticResource SecondaryButtonStyle}"
+										Margin="0,0,0,0"/>
+							</StackPanel>
+
+							<!-- 第二行：其他操作 -->
+							<WrapPanel Margin="0,10,0,0">
+								<Button Content="🔔 测试通知"
+										Command="{Binding TestNotificationCommand}"
+										Style="{StaticResource SecondaryButtonStyle}"
+										Margin="0,0,10,10"/>
+								<Button Content="🔄 重置计数"
+										Command="{Binding ResetTodayCountCommand}"
+										Style="{StaticResource SecondaryButtonStyle}"
+										Margin="0,0,10,10"/>
+							</WrapPanel>
+						</StackPanel>
+
 					</StackPanel>
 				</Border>
 

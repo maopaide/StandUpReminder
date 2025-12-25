@@ -40,6 +40,30 @@ public partial class MainViewModel : ObservableObject
 	[ObservableProperty]
 	private int _endMinute;
 
+	// === 新增：手动记录时间输入框绑定 ===
+	[ObservableProperty]
+	private int _recordHour;
+
+	[ObservableProperty]
+	private int _recordMinute;
+
+	// === 新增：手动记录时间（两位数显示） ===
+	[ObservableProperty]
+	private string _recordHourText = "00";
+
+	[ObservableProperty]
+	private string _recordMinuteText = "00";
+
+	// === 新增：实时刷新输入框时间（默认开） ===
+	[ObservableProperty]
+	private bool _isRecordTimeLive = true;
+
+	// === 新增：用于避免编辑时被覆盖 ===
+	[ObservableProperty]
+	private bool _isEditingRecordTime;
+
+
+
 	public ObservableCollection<int> Hours { get; } = new();
 	public ObservableCollection<int> Minutes { get; } = new();
 	public ObservableCollection<int> IntervalOptions { get; } = new()
@@ -53,6 +77,7 @@ public partial class MainViewModel : ObservableObject
 		get => _standRecords;
 		set => SetProperty(ref _standRecords, value);
 	}
+
 
 	public MainViewModel()
 	{
@@ -90,6 +115,13 @@ public partial class MainViewModel : ObservableObject
 		StartMinute = Settings.StartTime.Minutes;
 		EndHour = Settings.EndTime.Hours;
 		EndMinute = Settings.EndTime.Minutes;
+		// === 新增：默认记录时间为当前时间 ===
+		RecordHour = DateTime.Now.Hour;
+		RecordMinute = DateTime.Now.Minute;
+
+		// === 新增：初始化记录时间为当前时间（两位数） ===
+		SetRecordTimeToNow();
+
 
 		_reminderService.StatusChanged += (s, status) =>
 		{
@@ -118,7 +150,17 @@ public partial class MainViewModel : ObservableObject
 		{
 			Interval = TimeSpan.FromSeconds(1)
 		};
-		timer.Tick += (s, e) => UpdateNextReminderText();
+		timer.Tick += (s, e) =>
+		{
+			UpdateNextReminderText();
+
+			// === 新增：实时刷新“记录时间”输入框 ===
+			if (IsRecordTimeLive && !IsEditingRecordTime)
+			{
+				SetRecordTimeToNow();
+			}
+		};
+
 		timer.Start();
 
 		// 自动启动
@@ -288,12 +330,28 @@ public partial class MainViewModel : ObservableObject
 	{
 		Settings.TodayCompletedCount++;
 
-		StandRecords.Add(DateTime.Now.ToString("HH:mm"));
+		// === 修改：记录输入框中的时间，格式固定 HH:mm（24小时，两位数） ===
+		if (!int.TryParse(RecordHourText, out var hour)) hour = DateTime.Now.Hour;
+		if (!int.TryParse(RecordMinuteText, out var minute)) minute = DateTime.Now.Minute;
+
+		hour = Math.Clamp(hour, 0, 23);
+		minute = Math.Clamp(minute, 0, 59);
+
+		var recorded = new TimeSpan(hour, minute, 0);
+		StandRecords.Add(recorded.ToString(@"hh\:mm"));
 
 		SaveSettings();
 
 		_notificationService.ShowQuickNotification("👏 太棒了！",
 			$"今日已完成 {Settings.TodayCompletedCount} 次站立活动");
+	}
+
+
+	private void SetRecordTimeToNow()
+	{
+		var now = DateTime.Now;
+		RecordHourText = now.Hour.ToString("00");
+		RecordMinuteText = now.Minute.ToString("00");
 	}
 
 }
