@@ -338,7 +338,10 @@ public partial class MainViewModel : ObservableObject
 		minute = Math.Clamp(minute, 0, 59);
 
 		var recorded = new TimeSpan(hour, minute, 0);
-		StandRecords.Add(recorded.ToString(@"hh\:mm"));
+		//StandRecords.Add(recorded.ToString(@"hh\:mm"));
+		// === 修改：使用自动排序规则添加 ===
+		AddStandRecord(recorded);
+
 
 		SaveSettings();
 
@@ -353,5 +356,24 @@ public partial class MainViewModel : ObservableObject
 		RecordHourText = now.Hour.ToString("00");
 		RecordMinuteText = now.Minute.ToString("00");
 	}
+
+	// === 新增：统一添加今日站立记录（自动按时间排序） ===
+	private void AddStandRecord(TimeSpan time)
+	{
+		// 转为 HH:mm 字符串
+		var timeText = time.ToString(@"hh\:mm");
+
+		StandRecords.Add(timeText);
+
+		// 按时间排序（字符串是 HH:mm，字典序 === 时间顺序）
+		var sorted = StandRecords
+			.OrderBy(t => t)
+			.ToList();
+
+		StandRecords.Clear();
+		foreach (var item in sorted)
+			StandRecords.Add(item);
+	}
+
 
 }
