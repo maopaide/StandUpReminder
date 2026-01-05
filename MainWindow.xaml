@@ -466,39 +466,38 @@
 							   Foreground="#333333"
 							   Margin="0,0,0,20"/>
 
-						<ItemsControl ItemsSource="{Binding StandRecords}" MaxHeight="120">
+						<ItemsControl ItemsSource="{Binding StandRecords}">
 							<ItemsControl.ItemsPanel>
 								<ItemsPanelTemplate>
-									<WrapPanel />
+									<WrapPanel Orientation="Horizontal"/>
 								</ItemsPanelTemplate>
 							</ItemsControl.ItemsPanel>
 							<ItemsControl.ItemTemplate>
 								<DataTemplate>
-									<Border Background="#D4EDDA" 
-										CornerRadius="6" 
-										Padding="12,8" 
-										Margin="0,0,8,8">
-										<StackPanel Orientation="Horizontal">
-											<!-- 勾号，绿色 -->
+									<Border Width="90"
+												Background="#D4EDDA"
+												CornerRadius="6"
+												Padding="10,6"
+												Margin="4">
+										<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
 											<TextBlock Text="✅"
-                               FontSize="13"
-                               Margin="0,0,4,0"
-                               Foreground="#155724"/>
-											<!-- 时间文本，绿色 -->
+														   FontSize="12"
+														   Margin="0,0,4,0"
+														   Foreground="#155724"/>
 											<TextBlock Text="{Binding}"
-                               FontSize="13"
-                               Foreground="#155724"/>
+														   FontSize="12"
+														   Foreground="#155724"/>
 										</StackPanel>
 									</Border>
 								</DataTemplate>
 							</ItemsControl.ItemTemplate>
-						</ItemsControl>
 
+						</ItemsControl>
 						<!-- 无记录时显示 -->
 						<TextBlock Text="暂无站立记录" 
-							   FontSize="12" 
-							   Foreground="#999999"
-							   Visibility="{Binding StandRecords.Count, Converter={StaticResource CountToVisibilityConverter}, ConverterParameter=inverse}">
+									   FontSize="12" 
+									   Foreground="#999999"
+									   Visibility="{Binding StandRecords.Count, Converter={StaticResource CountToVisibilityConverter}, ConverterParameter=inverse}">
 							<TextBlock.Style>
 								<Style TargetType="TextBlock">
 									<Setter Property="Visibility" Value="Collapsed"/>
