@@ -1,27 +1,94 @@
 ﻿using System;
 using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Interop;
 
 namespace StandUpReminder;
 
 public partial class App : Application
 {
+	private const string MutexName = "StandUpReminderApp";
+	private const int WM_SHOW_APP = 0x0400 + 1;
+
+	private Mutex _mutex;
+
 	protected override void OnStartup(StartupEventArgs e)
 	{
-		base.OnStartup(e);
+		// ⭐ 关键：阻止 WPF 自动创建窗口
+		ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
-		// 确保只运行一个实例
-		var mutex = new System.Threading.Mutex(true, "StandUpReminderApp", out bool createdNew);
+		_mutex = new Mutex(true, MutexName, out bool createdNew);
+
 		if (!createdNew)
 		{
-			MessageBox.Show("程序已在运行中！", "站立提醒助手", MessageBoxButton.OK, MessageBoxImage.Information);
-			Current.Shutdown();
+			// 第二个实例：只负责唤醒已有窗口
+			SendShowMessageToRunningInstance();
+			Shutdown();
 			return;
 		}
-	}
-}
 
+		// 第一个实例：注册消息
+		ComponentDispatcher.ThreadPreprocessMessage += ThreadPreprocessMessageMethod;
+
+		base.OnStartup(e);
+
+		// ⭐ 手动创建主窗口（此时才会出现在任务栏）
+		MainWindow = new MainWindow();
+		MainWindow.Show();
+
+		// 恢复正常关闭模式
+		ShutdownMode = ShutdownMode.OnMainWindowClose;
+	}
+
+	protected override void OnExit(ExitEventArgs e)
+	{
+		_mutex?.ReleaseMutex();
+		_mutex?.Dispose();
+		base.OnExit(e);
+	}
+
+	private void ThreadPreprocessMessageMethod(ref MSG msg, ref bool handled)
+	{
+		if (msg.message == WM_SHOW_APP)
+		{
+			ShowMainWindow();
+			handled = true;
+		}
+	}
+
+	private void ShowMainWindow()
+	{
+		if (MainWindow == null)
+			return;
+
+		MainWindow.Dispatcher.Invoke(() =>
+		{
+			MainWindow.Show();
+			MainWindow.WindowState = WindowState.Normal;
+			MainWindow.Activate();
+			MainWindow.Topmost = true;
+			MainWindow.Topmost = false;
+			MainWindow.Focus();
+		});
+	}
+
+	private void SendShowMessageToRunningInstance()
+	{
+		IntPtr hwnd = FindWindow(null, "站立提醒助手");
+		if (hwnd != IntPtr.Zero)
+		{
+			PostMessage(hwnd, WM_SHOW_APP, IntPtr.Zero, IntPtr.Zero);
+		}
+	}
+
+	[DllImport("user32.dll")]
+	private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+	[DllImport("user32.dll")]
+	private static extern bool PostMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
+}
 // 反转布尔转换器
 public class InverseBoolConverter : IValueConverter
 {

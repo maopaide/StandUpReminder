@@ -38,7 +38,6 @@ public partial class MainWindow : Window
 		{
 			e.Cancel = true;
 			Hide();
-			//ShowTimedBalloonTip("站立提醒助手", "程序已最小化到系统托盘，单击图标可打开", 3000);
 		}
 		else
 		{
